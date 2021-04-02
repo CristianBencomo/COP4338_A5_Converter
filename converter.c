@@ -54,19 +54,43 @@ void csvToTl5(FILE *input, FILE *output)
 	char* token;
 	char line[MAX_LEN];//temporary placeholder for a line input from the file
 	
-	for (int i = 0; fscanf(input, "%[^\n]\n", line) != EOF; i++) {
+	for (int i = 0; fscanf(input, "%[^\n]\n", line) != EOF; i++) 
+    {
 		data[dataIndex] = (char*)malloc(strlen(line) + 1);//+1 for \0
 		strcpy(data[dataIndex++], line);
 	}
 	
 	for (int i = 0; i < dataIndex; i++) 
 	{
-		token = trim(strtok(data[i], ","));//tokenizes the ith row stored in data[i] and trims it
+		token = strtok(data[i], ",");//tokenizes the ith row stored in data[i] and trims it
 		fprintf(output, "%-5.5s", token);
 		while (token = trim(strtok(NULL,",")))
 			fprintf(output, "|%-5.5s", token);
 		fprintf(output, i == dataIndex - 1 ? "" : "\n");
 	}
+}
+
+void tl5ToCsv(FILE *input, FILE *output)
+{
+    int dataIndex = 0;
+    char *data[MAX_ROW];
+    char *token;
+    char line[MAX_LEN];
+
+    for(int i=0; fscanf(input, "%[^\n]\n", line) != EOF; i++)
+    {
+        data[dataIndex] = (char*)malloc(strlen(line) + 1);
+        strcpy(data[dataIndex++], line);
+    }
+
+    for (int i = 0; i<dataIndex; i++)
+    {
+        token = trim(strtok(data[i], "|"));
+        fprintf(output, "%-5s", token);
+        while (token = trim(strtok(NULL, "|")))
+            fprintf(output, ",%-5s", token);
+        fprintf(output, i == dataIndex - 1 ? "" : "\n");
+    }
 }
 
 
@@ -80,6 +104,7 @@ main()
     
     do
     {
+        
         printf("Please enter a command...\n");
         printf("Convert xxxx.ext yyyy.ext\n");
         char *input;
@@ -92,31 +117,40 @@ main()
 
         char *filename_in, *filename_out;
 
-        strcpy(filename_in,token);
+
+        filename_in = token;
         token = strtok(NULL, " \0");
-        strcpy(filename_out, token);
+        filename_out = token;
+
 
         char *infile_ext = fileExtension(filename_in);
         char *outfile_ext = fileExtension(filename_out);
-
-        finput = fopen(filename_in, "r");
-        foutput = fopen(filename_out, "w+");
         
-        printf("TEST");
-        if(strcasecmp(filename_in, "csv") == 0 && strcasecmp(filename_out, "tl5") == 0) // csv to tl5
+        if(strcasecmp(infile_ext, "csv") == 0 && strcasecmp(outfile_ext, "tl5") == 0) // csv to tl5
         {
-            printf("Converting from .csv to tl5\n");
+            finput = fopen(filename_in, "r");
+            foutput = fopen(filename_out, "w+");
+            printf("Converting from .csv to .tl5\n");
             csvToTl5(finput, foutput);
-            printf("Conversion finished\n");
+            printf("Conversion finished\n\n");
         }
-
+        else if(strcasecmp(infile_ext, "tl5") == 0 && strcasecmp(outfile_ext, "csv") == 0)
+        {
+            finput = fopen(filename_in, "r");
+            foutput = fopen(filename_out, "w+");
+            printf("Converting from .tl5 to .csv\n");
+            tl5ToCsv(finput, foutput);
+            printf("Conversion finished\n\n");
+        }
         else
         {
             printf("Incorrect command, please enter a valid command\n");
         }
 
+    fclose(finput);
+    fclose(foutput);
+
         // Ask user if they want to run the program again
     } while (!wantToExit);    
 
-
-}    
+}
