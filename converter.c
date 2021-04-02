@@ -105,8 +105,8 @@ main()
     do
     {
         
-        printf("Please enter a command...\n");
-        printf("Convert xxxx.ext yyyy.ext\n");
+        printf("Please enter a command...\nExample:\n");
+        printf("xxxx.ext yyyy.ext\n");
         char *input;
         char *str;
         input = dynamicScan(str);
